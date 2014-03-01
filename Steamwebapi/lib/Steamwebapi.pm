@@ -4,40 +4,392 @@ use strict;
 use warnings;
 use Carp;
 use Exporter;
-use Data::Dumper;
-our $VERSION     = 1.00;
-our $ABSTRACT    = "Module for Valve Steam Web API ";
-our @ISA = qw(Exporter);
-our %EXPORT_TAGS = (
-          'encode' => [ qw(
-                          vdf_encode
-                  ) ],
-          'decode' => [ qw(
-                          vdf_decode
-                  ) ],
-          'both' => [ qw(
-                          vdf_encode
-                          vdf_decode
-                  ) ],
-);
-our @EXPORT_OK   = qw(vdf_encode vdf_decode);
-our @EXPORT = ();
+#use LWP::Simple;
 
+our $VERSION     = 1.00;
+our $ABSTRACT    = "Module for Valve Steam Web API.";
+
+my $server = "api.steampowered.com";
+
+#--------------------------------------------------INTERFACE LIST---------------------------------#
 use constant {
-        QUOTE => '"',
-        CURLY_BRACE_START => "{",
-        CURLY_BRACE_END => "}",
-        NEW_LINE => "\n",
-        CARRIAGE_RETURN => "\r",
-        TAB => "\t",
+	APPS => "ISteamApps",
+	ECONOMY => "ISteamEconomy",
+	NEWS => "ISteamNews",
+	STORAGE => "ISteamRemoteStorage",
+    	USER => "ISteamUser",
+    	STATS => "ISteamUserStats",
+    	SERVICE => "IPlayerService",
+	UTIL => "ISteamWebAPIUtil",
 };
 
-our %switch_trigger = (
-        '"' => \&case_quote,
-        "{" => \&case_brace_start,
-        "}" => \&case_brace_end,
-);
+#--------------------------------------------------METHODS LIST------------------------------------#
+my $methods = {
+	"GetAppList" => {
+		interface => APPS, 
+		version => 2
+	},
+	"UpToDateCheck" => {
+		interface => APPS,
+		version => 1,
+	},
+	"GetAssetClassInfo" => {
+		interface => ECONOMY,
+		version => 1,
+	},
+	"GetAssetPrices" => {
+		interface => ECONOMY,
+		version => 1,
+	},
+	"GetNewsForApp" => {
+		interface => NEWS,
+		version => 2,
+	},
+	"GetUGCFileDetails" => {
+		interface => STORAGE,
+		version => 1,
+	},
+	"GetFriendList" => {
+		interface => USER,
+		version => 1,
+	},
+	"GetPlayerBans" => {
+		interface => USER,
+		version => 1,
+	},
+	"GetPlayerSummaries" => {
+		interface => USER,
+		version => 2,
+	},
+	"GetUserGroupList" => {
+		interface => USER,
+		version => 1,
+	},
+	"ResolveVanityURL" => {
+		interface => USER,
+		version => 1,
+	},
+	"GetGlobalAchievementPercentagesForApp" => {
+		interface => STATS,
+		version => 2,
+	},
+	"GetNumberOfCurrentPlayers" => {
+		interface => STATS,
+		version => 1,
+	},
+	"GetPlayerAchievements" => {
+		interface => STATS,
+		version => 1,
+	},
+	"GetSchemaForGame" => {
+		interface => STATS,
+		version => 2,
+	},
+	"GetUserStatsForGame" => {
+		interface => STATS,
+		version => 2,
+	},
+	"GetRecentlyPlayedGames" => {
+		interface => SERVICE,
+		version => 1,
+	},
+	"GetOwnedGames" => {
+		interface => SERVICE,
+		version => 1,
+	},
+	"GetSteamLevel" => {
+		interface => SERVICE,
+		version => 1,
+	},
+	"GetBadges" => {
+		interface => SERVICE,
+		version => 1,
+	},
+	"GetCommunityBadgeProgress" => {
+		interface => SERVICE,
+		version => 1,
+	},
+	"GetServerInfo" => {
+		interface => UTIL,
+		version => 1,
+	},
+	"GetSupportedAPIList" => {
+		interface => UTIL,
+		version => 1,
+	},
+};
 
+sub listobj {
+        my $funcname = (caller(1)) [3];
+        $funcname =~ s/^.*:://;
+	my $obj = {
+		method => $funcname,
+		interface => $methods->{$funcname}->{interface},
+		version => $methods->{$funcname}->{version},
+	};
+        return $obj;
+}
+
+sub steamid {
+	my ($self, $value) = @_;
+	if (@_ == 2) {
+		$self->{steamid} = $value;
+	}
+	return $self->{steamid} if defined $self->{steamid};
+}
+
+sub apikey {
+        my ($self, $value) = @_;
+        if (@_ == 2) {
+                $self->{apikey} = $value;
+        }
+        return $self->{apikey} if defined $self->{apikey};
+}
+
+sub new {
+	my ($class, %args) = @_;
+	my $self;
+	if(@_ == 1) {
+		$self = {};
+	}
+	if(@_ == 2) {
+		$self = {
+			"apikey" => $args{apikey}
+		};
+	}
+  	return bless $self, $class;
+}
+
+sub GetAppList
+{
+	my $self = shift;
+	my $list = listobj();
+	return $self->fetch($list);
+}
+
+sub UptoDateCheck
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No appid provided") if(!($args{appid}));
+	croak("Cant Proceed, No version provided") if(!($args{version}));
+        my $list = listobj();
+        return $self->fetch($list, %args);
+}
+
+sub GetAssetClassInfo
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No appid provided") if(!($args{appid}));
+        croak("Cant Proceed, No class count provided") if(!($args{class_count}));
+	croak("Cant Proceed, No class id provided") if(!($args{class_id}));
+        my $list = listobj();
+        return $self->fetch($list, %args);
+}
+
+sub GetAssetPrices
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No appid provided") if(!($args{appid}));
+        my $list = listobj();
+        return $self->fetch($list, %args);
+}
+
+sub GetNewsForApp {
+	my ($self, %args) = @_;
+	croak("Cant Proceed, No appid provided") if(!($args{appid}));
+    	my $list = listobj();
+    	return $self->fetch($list, %args);
+}
+
+sub GetUGCFileDetails {
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No appid provided") if(!($args{appid}));
+	croak("Cant Proceed, No ugcid provided") if(!($args{ugcid}));
+        my $list = listobj();
+        return $self->fetch($list, %args);
+}
+
+sub GetFriendList {
+	my ($self, %args) = @_;	
+	if (not defined $args{key}) {
+                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+        }
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+sub GetPlayerBans
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No steamid list provided") if(!($args{steamids}));
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+
+sub GetPlayerSummaries
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No steamid list provided") if(!($args{steamids}));
+	my $list = listobj();
+        return $self->fetch($list, %args);	
+}
+
+sub GetUserGroupList
+{
+	my ($self, %args) = @_;
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);	
+}
+
+sub ResolveVanityURL
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No vanity url provided") if(!($args{vanityurl}));
+	my $list = listobj();
+        return $self->fetch($list, %args);	
+}
+
+sub GetGlobalAchievementPercentagesForApp {
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No game id provided") if(!($args{gameid}));
+	my $list = listobj();
+        return $self->fetch($list, %args);	
+}
+
+sub GetNumberOfCurrentPlayers
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No app id provided") if(!($args{appid}));
+	my $list = listobj();
+        return $self->fetch($list, %args);	
+}
+
+
+sub GetPlayerAchievements {
+	my ($self, %args) = @_;
+    	croak("App ID cannot be blank") if(!($args{appid}));
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+    	return $self->fetch($list, $params);
+}
+
+sub GetSchemaForGame
+{
+	my ($self, %args) = @_;
+        croak("Cant Proceed, No app id provided") if(!($args{appid}));
+	my $list = listobj();
+        return $self->fetch($list, %args);	
+}
+
+sub GetUserStatsForGame {
+	my ($self, %args) = @_;
+    	croak("App ID cannot be blank") if(!($args{appid}));
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+    	return $self->fetch($list, $params);
+}
+
+sub GetRecentlyPlayedGames {
+	my ($self, %args) = @_;	
+	if (not defined $args{key}) {
+                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+        }
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+
+sub GetOwnedGames {
+	my ($self, %args) = @_;	
+	if (not defined $args{key}) {
+                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+        }
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+sub GetSteamLevel
+{
+	my ($self, %args) = @_;	
+	if (not defined $args{key}) {
+                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+        }
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+sub GetBadges
+{
+	my ($self, %args) = @_;	
+	if (not defined $args{key}) {
+                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+        }
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+sub GetCommunityBadgeProgress
+{
+	my ($self, %args) = @_;	
+	if (not defined $args{key}) {
+                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+        }
+    	if (not defined $args{steamid}) {
+		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+    	}
+	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+sub GetServerInfo
+{
+	my $self = shift;
+	my $list = listobj();
+	return $self->fetch($list);
+}
+sub GetSupportedAPIList
+{
+	if(@_ == 1) {
+		my $self = shift;
+		my $list = listobj();
+	}
+	if(@_ == 2) {
+		my ($self, %args) = @_;
+		my $list = listobj();
+        	return $self->fetch($list, %args);	
+	}
+	return $self->fetch($list);
+}
+
+sub fetch {
+    	my ($self, $list, %params) = @_;
+    	my $url = "http://".$server."/".$list->{interface}."/".$list->{method}."/v000".$list->{version};
+	if (keys %params) {
+		my $urlparams = join "&", map {"$_=$params{$_}"} keys %params;
+		$url .= "/?".$urlparams;
+	}
+    	#my $response = get $url;
+    	#croak "Couldn't get $url" unless defined $response;
+	
+	#return $response; 
+	return system("wget -q -O - $url");
+}
 1;
 
 __END__
@@ -54,7 +406,7 @@ Version 1.00
 
 This module provides an interface to Valve steam web api.
 
-=head1 METHODS
+=head1 methods
 	
 =head1 AUTHOR
 
