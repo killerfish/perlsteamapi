@@ -4,13 +4,13 @@ use strict;
 use warnings;
 use Carp;
 use Exporter;
-#use LWP::Simple;
+use LWP::Simple;
 
 our $VERSION     = 1.00;
 our $ABSTRACT    = "Module for Valve Steam Web API.";
 
 my $server = "api.steampowered.com";
-
+my $wget = 0;
 #--------------------------------------------------INTERFACE LIST---------------------------------#
 use constant {
 	APPS => "ISteamApps",
@@ -130,6 +130,14 @@ sub listobj {
         return $obj;
 }
 
+sub wget {
+        my ($self, $value) = @_;
+        if (@_ == 2) {
+                $wget = $value;
+        }
+        return $wget;
+}
+
 sub steamid {
 	my ($self, $value) = @_;
 	if (@_ == 2) {
@@ -160,15 +168,13 @@ sub new {
   	return bless $self, $class;
 }
 
-sub GetAppList
-{
+sub GetAppList {
 	my $self = shift;
 	my $list = listobj();
 	return $self->fetch($list);
 }
 
-sub UptoDateCheck
-{
+sub UptoDateCheck {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No appid provided") if(!($args{appid}));
 	croak("Cant Proceed, No version provided") if(!($args{version}));
@@ -176,8 +182,7 @@ sub UptoDateCheck
         return $self->fetch($list, %args);
 }
 
-sub GetAssetClassInfo
-{
+sub GetAssetClassInfo {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No appid provided") if(!($args{appid}));
         croak("Cant Proceed, No class count provided") if(!($args{class_count}));
@@ -186,8 +191,7 @@ sub GetAssetClassInfo
         return $self->fetch($list, %args);
 }
 
-sub GetAssetPrices
-{
+sub GetAssetPrices {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No appid provided") if(!($args{appid}));
         my $list = listobj();
@@ -220,24 +224,21 @@ sub GetFriendList {
 	my $list = listobj();
         return $self->fetch($list, %args);
 }
-sub GetPlayerBans
-{
+sub GetPlayerBans {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No steamid list provided") if(!($args{steamids}));
 	my $list = listobj();
         return $self->fetch($list, %args);
 }
 
-sub GetPlayerSummaries
-{
+sub GetPlayerSummaries {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No steamid list provided") if(!($args{steamids}));
 	my $list = listobj();
         return $self->fetch($list, %args);	
 }
 
-sub GetUserGroupList
-{
+sub GetUserGroupList {
 	my ($self, %args) = @_;
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
@@ -246,8 +247,7 @@ sub GetUserGroupList
         return $self->fetch($list, %args);	
 }
 
-sub ResolveVanityURL
-{
+sub ResolveVanityURL {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No vanity url provided") if(!($args{vanityurl}));
 	my $list = listobj();
@@ -261,14 +261,12 @@ sub GetGlobalAchievementPercentagesForApp {
         return $self->fetch($list, %args);	
 }
 
-sub GetNumberOfCurrentPlayers
-{
+sub GetNumberOfCurrentPlayers {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No app id provided") if(!($args{appid}));
 	my $list = listobj();
         return $self->fetch($list, %args);	
 }
-
 
 sub GetPlayerAchievements {
 	my ($self, %args) = @_;
@@ -277,11 +275,10 @@ sub GetPlayerAchievements {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
     	}
 	my $list = listobj();
-    	return $self->fetch($list, $params);
+    	return $self->fetch($list, %args);
 }
 
-sub GetSchemaForGame
-{
+sub GetSchemaForGame {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No app id provided") if(!($args{appid}));
 	my $list = listobj();
@@ -295,7 +292,7 @@ sub GetUserStatsForGame {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
     	}
 	my $list = listobj();
-    	return $self->fetch($list, $params);
+    	return $self->fetch($list, %args);
 }
 
 sub GetRecentlyPlayedGames {
@@ -321,8 +318,7 @@ sub GetOwnedGames {
 	my $list = listobj();
         return $self->fetch($list, %args);
 }
-sub GetSteamLevel
-{
+sub GetSteamLevel {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
                 $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
@@ -333,8 +329,7 @@ sub GetSteamLevel
 	my $list = listobj();
         return $self->fetch($list, %args);
 }
-sub GetBadges
-{
+sub GetBadges {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
                 $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
@@ -345,8 +340,7 @@ sub GetBadges
 	my $list = listobj();
         return $self->fetch($list, %args);
 }
-sub GetCommunityBadgeProgress
-{
+sub GetCommunityBadgeProgress {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
                 $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
@@ -357,21 +351,21 @@ sub GetCommunityBadgeProgress
 	my $list = listobj();
         return $self->fetch($list, %args);
 }
-sub GetServerInfo
-{
+sub GetServerInfo {
 	my $self = shift;
 	my $list = listobj();
 	return $self->fetch($list);
 }
-sub GetSupportedAPIList
-{
+sub GetSupportedAPIList {
+	my ($self, $list);
 	if(@_ == 1) {
-		my $self = shift;
-		my $list = listobj();
+		$self = shift;
+		$list = listobj();
 	}
 	if(@_ == 2) {
-		my ($self, %args) = @_;
-		my $list = listobj();
+		$self = shift;
+		my %args = shift;
+		$list = listobj();
         	return $self->fetch($list, %args);	
 	}
 	return $self->fetch($list);
@@ -384,10 +378,11 @@ sub fetch {
 		my $urlparams = join "&", map {"$_=$params{$_}"} keys %params;
 		$url .= "/?".$urlparams;
 	}
-    	#my $response = get $url;
-    	#croak "Couldn't get $url" unless defined $response;
-	
-	#return $response; 
+	if (wget == 0) {
+    		my $response = get $url;
+    		croak "Couldn't get $url" unless defined $response;
+		return $response; 
+	}
 	return system("wget -q -O - $url");
 }
 1;
