@@ -378,7 +378,7 @@ sub fetch {
 		my $urlparams = join "&", map {"$_=$params{$_}"} keys %params;
 		$url .= "/?".$urlparams;
 	}
-	if (wget == 0) {
+	if ($wget == 0) {
     		my $response = get $url;
     		croak "Couldn't get $url" unless defined $response;
 		return $response; 
