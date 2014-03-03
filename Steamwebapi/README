@@ -1,7 +1,8 @@
 Vdfparser
 
-This module covers the most of the interfaces utilized by steam web api.
-Create a steamwebapi object and simply use methods to fetch results. (For complete method documentation look at pod).
+This module provides an OO implementation to access Valve steam web api (https://developer.valvesoftware.com/wiki/Steam_Web_API). 
+Simply create an object, in which apikey is an optional parameter to pass, and use the methods defined below to fetch result. 
+Default return format would be json, unless specified so. Also check the examples included.
 
 	use Steamwebapi;
 	use Data::Dumper;
@@ -19,7 +20,7 @@ To install this module, run the following commands:
 
 SUPPORT AND DOCUMENTATION
 
-After installing, you can find detail documentation for this module with the
+After installing, you can find detailed documentation for this module with the
 perldoc command or try the man command also
 
     	perldoc Steamwebapi
