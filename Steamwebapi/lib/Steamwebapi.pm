@@ -16,7 +16,6 @@ use constant {
 	APPS => "ISteamApps",
 	ECONOMY => "ISteamEconomy",
 	NEWS => "ISteamNews",
-	STORAGE => "ISteamRemoteStorage",
     	USER => "ISteamUser",
     	STATS => "ISteamUserStats",
     	SERVICE => "IPlayerService",
@@ -33,10 +32,6 @@ my $methods = {
 		interface => APPS,
 		version => 1,
 	},
-	"GetAssetClassInfo" => {
-		interface => ECONOMY,
-		version => 1,
-	},
 	"GetAssetPrices" => {
 		interface => ECONOMY,
 		version => 1,
@@ -44,10 +39,6 @@ my $methods = {
 	"GetNewsForApp" => {
 		interface => NEWS,
 		version => 2,
-	},
-	"GetUGCFileDetails" => {
-		interface => STORAGE,
-		version => 1,
 	},
 	"GetFriendList" => {
 		interface => USER,
@@ -109,6 +100,10 @@ my $methods = {
 		interface => SERVICE,
 		version => 1,
 	},
+	IsPlayingSharedGame => {
+		interface => SERVICE,
+		version => 1,
+	},
 	"GetServerInfo" => {
 		interface => UTIL,
 		version => 1,
@@ -146,23 +141,23 @@ sub steamid {
 	return $self->{steamid} if defined $self->{steamid};
 }
 
-sub apikey {
+sub key {
         my ($self, $value) = @_;
         if (@_ == 2) {
-                $self->{apikey} = $value;
+                $self->{key} = $value;
         }
-        return $self->{apikey} if defined $self->{apikey};
+        return $self->{key} if defined $self->{key};
 }
 
 sub new {
-	my ($class, %args) = @_;
+	my ($class, $opt) = @_;
 	my $self;
 	if(@_ == 1) {
 		$self = {};
 	}
 	if(@_ == 2) {
 		$self = {
-			"apikey" => $args{apikey}
+			"key" => $opt,
 		};
 	}
   	return bless $self, $class;
@@ -174,19 +169,10 @@ sub GetAppList {
 	return $self->fetch($list);
 }
 
-sub UptoDateCheck {
+sub UpToDateCheck {
 	my ($self, %args) = @_;
         croak("Cant Proceed, No appid provided") if(!($args{appid}));
 	croak("Cant Proceed, No version provided") if(!($args{version}));
-        my $list = listobj();
-        return $self->fetch($list, %args);
-}
-
-sub GetAssetClassInfo {
-	my ($self, %args) = @_;
-        croak("Cant Proceed, No appid provided") if(!($args{appid}));
-        croak("Cant Proceed, No class count provided") if(!($args{class_count}));
-	croak("Cant Proceed, No class id provided") if(!($args{class_id}));
         my $list = listobj();
         return $self->fetch($list, %args);
 }
@@ -205,18 +191,10 @@ sub GetNewsForApp {
     	return $self->fetch($list, %args);
 }
 
-sub GetUGCFileDetails {
-	my ($self, %args) = @_;
-        croak("Cant Proceed, No appid provided") if(!($args{appid}));
-	croak("Cant Proceed, No ugcid provided") if(!($args{ugcid}));
-        my $list = listobj();
-        return $self->fetch($list, %args);
-}
-
 sub GetFriendList {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
-                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+                $args{key} = $self->{key} or croak "API Key cannot be blank";
         }
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
@@ -298,7 +276,7 @@ sub GetUserStatsForGame {
 sub GetRecentlyPlayedGames {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
-                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+                $args{key} = $self->{key} or croak "API key cannot be blank";
         }
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
@@ -310,7 +288,7 @@ sub GetRecentlyPlayedGames {
 sub GetOwnedGames {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
-                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+                $args{key} = $self->{key} or croak "API key cannot be blank";
         }
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
@@ -321,7 +299,7 @@ sub GetOwnedGames {
 sub GetSteamLevel {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
-                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+                $args{key} = $self->{key} or croak "API key cannot be blank";
         }
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
@@ -332,7 +310,7 @@ sub GetSteamLevel {
 sub GetBadges {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
-                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+                $args{key} = $self->{key} or croak "API key cannot be blank";
         }
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
@@ -343,12 +321,23 @@ sub GetBadges {
 sub GetCommunityBadgeProgress {
 	my ($self, %args) = @_;	
 	if (not defined $args{key}) {
-                $args{key} = $self->{apikey} or croak "Steam ID cannot be blank";
+                $args{key} = $self->{key} or croak "API key cannot be blank";
         }
     	if (not defined $args{steamid}) {
 		$args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
     	}
 	my $list = listobj();
+        return $self->fetch($list, %args);
+}
+sub IsPlayingSharedGame {
+        my ($self, %args) = @_;
+        if (not defined $args{key}) {
+                $args{key} = $self->{key} or croak "API key cannot be blank";
+        }
+        if (not defined $args{steamid}) {
+                $args{steamid} = $self->{steamid} or croak "Steam ID cannot be blank";
+        }
+        my $list = listobj();
         return $self->fetch($list, %args);
 }
 sub GetServerInfo {
@@ -399,10 +388,126 @@ Version 1.00
 
 =head1 SYNOPSIS
 
-This module provides an interface to Valve steam web api.
+This module provides an OO implementation to access Valve steam web api. Simply create an object, in which apikey is an optional
+parameter to pass, and use the methods defined below to fetch result. Default return format would be json, unless specified so. 
+Also check the examples included. (All optional parameters will be indicated by italics).
 
-=head1 methods
+	use Steamwebapi;
 	
+	my $object = Steamwebapi(I<$yourapikey>);
+	
+	#You can then invoke the following methods here
+	...
+	my $result = $object->METHODNAME;
+
+=head1 METHODS
+
+Interface Methods are documented at https://developer.valvesoftware.com/wiki/Steam_Web_API and http://wiki.teamfortress.com/wiki/WebAPI. 
+This module covers General Interface Methods listed. Most of the methods are passed parameters, through a hash. Default return value is 
+in json, unless B<format> parameter passed in the hash specifies other value.
+
+=head2  key
+
+Getter/Setter method for Steam Web API Key.
+
+	$object->steamid($yourapikey);
+
+=head2  steamid
+
+Getter/Setter method for Steam id.
+
+	$object->steamid($yoursteamid);
+
+=head2  wget
+
+Enable/Disable using wget instead of LWP, by passing 1 to enable, 0 to disable. It is disabled by default.
+
+	$object->wget(1);
+
+=head2	GetAppList
+
+	my $result = $object->GetAppList();
+
+=head2  UpToDateCheck
+
+	my $result = $object->UpToDateCheck((appid => 570, version => 37));
+
+=head2	GetAssetPrices
+
+	my $result = $object->((appid => 570, I<language => "en">, I<currency => "EUR">));
+
+=head2	GetNewsForApp
+
+	my $result = $object->((appid => 570, I<maxlength => 3>, I<enddate => 1362313932>, I<count => 15>, I<feeds => "pcgamer"));
+
+=head2	GetFriendList
+
+	my $result = $object->((steamid => $yoursteamid, I<relationship => "all">));
+
+=head2	GetPlayerBans
+
+	my $result = $object->((steamids => $steamidlist));
+
+=head2	GetPlayerSummaries
+
+	my $result = $object->((steamids => $steamidlist));
+
+=head2	GetUserGroupList
+
+	my $result = $object->((steamid => $yoursteamid, key => $yourapikey));
+
+=head2	ResolveVanityURL
+
+	my $result = $object->((vanityurl => $vanity_url))
+
+=head2	GetGlobalAchievementPercentageForApp
+
+	my $result = $object->((gameid => 570));
+
+=head2	GetNumberOfCurrentPlayers
+
+	my $result = $object->((appid = 570));
+
+=head2	GetPlayerAchievements
+
+	my $result = $object->((appid => 570, steamid => 76561198052285537, l => "fr", key => $yourapikey))
+
+=head2	GetSchemaForGame
+
+	my $result = $object->GetSchemaForGame((appid => 570, l => "fr", key => $yourapikey));
+
+=head2	GetRecentlyPlayedGames	
+
+	my $result = $object->GetRecentlyPlayedGames((key => $yourapikey, steamid => $yoursteamid));
+
+=head2	GetOwnedGames
+
+	my $result = $object->GetOwnedGames((steamid => $yoursteamid, key => $yourapikey));
+
+=head2	GetSteamLevel
+
+	my $result = $object->GetSteamLevel((steamid => $yoursteamid, key => $yourapikey));
+
+=head2	GetBadges
+
+	my $result = $object->GetBadges((steamid => $yoursteamid, key => $yourapikey));
+
+=head2	GetCommunityBadgeProgress
+
+	my $result = $object->GetCommunityBadgeProgress((steamid => $yoursteamid, key => $yourapikey));
+
+=head2	IsPlayingSharedGame
+
+	my $result = $object->IsPlayingSharedGame((steamid => $yoursteamid, key => $yourapikey));
+
+=head2	GetServerInfo
+
+	my $result = $object->GetServerInfo();
+
+=head2  GetSupportedAPIList
+
+	my $result = $object->(I<key => $yourapikey>);
+
 =head1 AUTHOR
 
 Usman Raza, B<C<usman.r123 at gmail.com>>
@@ -411,7 +516,8 @@ Usman Raza, B<C<usman.r123 at gmail.com>>
 
 You can find documentation for this module with the perldoc command. Also check the example provided.
 
-    perldoc Vdfparser
+	perldoc Steamwebapi
+	man Steamwebapi
 
 Github repo https://github.com/killerfish/perlsteamapi
 
