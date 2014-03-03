@@ -1,4 +1,4 @@
 perlsteamapi
 ============
 
-perl steam api
+perl Steam Web API module.
