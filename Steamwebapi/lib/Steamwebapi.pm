@@ -394,7 +394,7 @@ Also check the examples included. (All optional parameters will be indicated by 
 
 	use Steamwebapi;
 	
-	my $object = Steamwebapi(I<$yourapikey>);
+	my $object = Steamwebapi(I<<$yourapikey>>);
 	
 	#You can then invoke the following methods here
 	...
@@ -434,15 +434,15 @@ Enable/Disable using wget instead of LWP, by passing 1 to enable, 0 to disable. 
 
 =head2	GetAssetPrices
 
-	my $result = $object->((appid => 570, I<language => "en">, I<currency => "EUR">));
+	my $result = $object->((appid => 570, I<<language => "en">>, I<<currency => "EUR">>));
 
 =head2	GetNewsForApp
 
-	my $result = $object->((appid => 570, I<maxlength => 3>, I<enddate => 1362313932>, I<count => 15>, I<feeds => "pcgamer"));
+	my $result = $object->((appid => 570, I<<maxlength => 3>>, I<<enddate => 1362313932>>, I<<count => 15>>, I<<feeds => "pcgamer">>));
 
 =head2	GetFriendList
 
-	my $result = $object->((steamid => $yoursteamid, I<relationship => "all">));
+	my $result = $object->((key => $yourapikey, steamid => $yoursteamid, I<<relationship => "all">>));
 
 =head2	GetPlayerBans
 
@@ -506,7 +506,7 @@ Enable/Disable using wget instead of LWP, by passing 1 to enable, 0 to disable. 
 
 =head2  GetSupportedAPIList
 
-	my $result = $object->(I<key => $yourapikey>);
+	my $result = $object->(I<<key => $yourapikey>>);
 
 =head1 AUTHOR
 
