@@ -8,6 +8,7 @@ use LWP::Simple;
 
 our $VERSION     = 1.00;
 our $ABSTRACT    = "Module for Valve Steam Web API.";
+our @ISA = qw(Exporter);
 
 my $server = "api.steampowered.com";
 my $wget = 0;
@@ -390,15 +391,21 @@ Version 1.00
 
 This module provides an OO implementation to access Valve steam web api. Simply create an object, in which apikey is an optional
 parameter to pass, and use the methods defined below to fetch result. Default return format would be json, unless specified so. 
-Also check the examples included. (All optional parameters will be indicated by italics).
+Also check the examples included. (All optional parameters will be underlined).
 
-	use Steamwebapi;
-	
-	my $object = Steamwebapi(I<<$yourapikey>>);
-	
-	#You can then invoke the following methods here
-	...
-	my $result = $object->METHODNAME;
+=over 8
+
+use Steamwebapi;
+
+my $object = Steamwebapi(I<<  $yourapikey  >>);
+
+#You can then invoke the following methods here
+
+...
+
+my $result =  $object->METHODNAME ;
+
+=back
 
 =head1 METHODS
 
@@ -434,15 +441,27 @@ Enable/Disable using wget instead of LWP, by passing 1 to enable, 0 to disable. 
 
 =head2	GetAssetPrices
 
-	my $result = $object->((appid => 570, I<<language => "en">>, I<<currency => "EUR">>));
+=over 8
+	
+my $result = $object->((appid => 570, C<< language->"en" >>, I<< currency => "EUR" >>));
+
+=back
 
 =head2	GetNewsForApp
 
-	my $result = $object->((appid => 570, I<<maxlength => 3>>, I<<enddate => 1362313932>>, I<<count => 15>>, I<<feeds => "pcgamer">>));
+=over 8
+
+my $result = $object->((appid => 570, U<< maxlength => 3 >>, I<< enddate => 1362313932 >>, I<< count => 15 >>, I<< feeds => "pcgamer" >>));
+
+=back
 
 =head2	GetFriendList
 
-	my $result = $object->((key => $yourapikey, steamid => $yoursteamid, I<<relationship => "all">>));
+=over 8
+
+my $result = $object->((key => $yourapikey, steamid => $yoursteamid, I<< relationship => "all" >>));
+
+=back
 
 =head2	GetPlayerBans
 
@@ -470,11 +489,19 @@ Enable/Disable using wget instead of LWP, by passing 1 to enable, 0 to disable. 
 
 =head2	GetPlayerAchievements
 
-	my $result = $object->((appid => 570, steamid => 76561198052285537, l => "fr", key => $yourapikey))
+=over 8
+
+my $result = $object->((appid => 570, steamid => 76561198052285537, I<< l => "fr" >>, key => $yourapikey))
+
+=back
 
 =head2	GetSchemaForGame
 
-	my $result = $object->GetSchemaForGame((appid => 570, l => "fr", key => $yourapikey));
+=over 8
+
+my $result = $object->GetSchemaForGame((appid => 570, I<< l => "fr" >>, key => $yourapikey));
+
+=back
 
 =head2	GetRecentlyPlayedGames	
 
@@ -506,7 +533,11 @@ Enable/Disable using wget instead of LWP, by passing 1 to enable, 0 to disable. 
 
 =head2  GetSupportedAPIList
 
-	my $result = $object->(I<<key => $yourapikey>>);
+=over 8
+
+my $result = $object->(I<< key => $yourapikey >>);
+
+=back
 
 =head1 AUTHOR
 
