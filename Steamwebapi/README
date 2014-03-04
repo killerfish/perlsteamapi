@@ -1,4 +1,4 @@
-Vdfparser
+Steamwebapi
 
 This module provides an OO implementation to access Valve steam web api (https://developer.valvesoftware.com/wiki/Steam_Web_API). 
 Simply create an object, in which apikey is an optional parameter to pass, and use the methods defined below to fetch result. 
