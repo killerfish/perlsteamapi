@@ -23,7 +23,7 @@ print Dumper \%r;
 
 print "\n-------------------------------------------METHOD: GetBadges--------------------------------------------------------------------\n";
 
-$object->key("F27D7B33816595821096023E43DAF316");
+$object->key($your_api_key);
 $object->steamid("76561198052285537");
 $result = $object->GetBadges();
 print Dumper json_to_perl($result);
